@@ -41,20 +41,37 @@ struct BookCoverCarouselView: View {
                     ForEach(Array(filteredBooks.enumerated()), id: \.offset) { index, book in
                         ZStack(alignment: .topTrailing) {
 
-                            VStack {
-                                AsyncImage(url: URL(string: book.imageUrl ?? "")) { image in
-                                    image.resizable()
-                                         .scaledToFill()
-                                } placeholder: {
-                                    Color.gray.opacity(0.3)
+                            VStack(spacing: 6) {
+                                AsyncImage(url: URL(string: book.imageUrl ?? "")) { phase in
+                                    if let image = phase.image {
+                                        image
+                                            .resizable()
+                                            .scaledToFill()
+                                    } else if phase.error != nil {
+                                        Color.red.opacity(0.3) // 圖片載入失敗
+                                    } else {
+                                        Color.gray.opacity(0.3) // 載入中
+                                    }
                                 }
                                 .frame(width: 120, height: 160)
                                 .cornerRadius(8)
                                 .clipped()
 
-                                Text(book.title)
-                                    .font(.caption)
-                                    .lineLimit(1)
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(book.title)
+                                        .font(.caption)
+                                        .lineLimit(1)
+                                    Text("作者：\(book.author)")
+                                        .font(.caption2)
+                                        .foregroundColor(.gray)
+                                    Text("出版社：\(book.publisher)")
+                                        .font(.caption2)
+                                        .foregroundColor(.gray)
+                                    Text("出版年份：\(book.publishYear)")
+                                        .font(.caption2)
+                                        .foregroundColor(.gray)
+                                }
+
                             }
 
                             // 🔥 熱門書標籤（示意）
@@ -72,22 +89,12 @@ struct BookCoverCarouselView: View {
                     }
                 }
                 .tabViewStyle(PageTabViewStyle(indexDisplayMode: .automatic))
-                .frame(height: 200)
+                .frame(height: 250)
                 .onReceive(timer) { _ in
                     withAnimation {
                         currentIndex = (currentIndex + 1) % filteredBooks.count
                     }
                 }
-            }
-
-            // 簡單統計
-            if !filteredBooks.isEmpty {
-                let total = filteredBooks.count
-                let available = filteredBooks.filter { $0.availableCopies > 0 }.count
-                Text("📘 \(selectedCategory) 共 \(total) 本，剩餘 \(available) 本可借")
-                    .font(.subheadline)
-                    .foregroundColor(.gray)
-                    .padding(.top, 8)
             }
 
             Spacer()

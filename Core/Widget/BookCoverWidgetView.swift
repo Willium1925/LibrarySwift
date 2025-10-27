@@ -5,139 +5,138 @@
 //  Created by fcuiecs on 2025/10/27.
 import WidgetKit
 import SwiftUI
+import Foundation
 
-// 🔹 Widget Timeline Entry
-struct BookCoverEntry: TimelineEntry {
+// MARK: - Entry 資料結構
+struct BookCarouselEntry: TimelineEntry {
     let date: Date
     let books: [Book]
 }
 
-// 🔹 Timeline Provider
-struct BookCoverProvider: TimelineProvider {
-    typealias Entry = BookCoverEntry
-
-    func placeholder(in context: Context) -> BookCoverEntry {
-        BookCoverEntry(date: Date(), books: [
-            Book(id: 1, title: "示範書籍", author: "作者", category: "文學小說",
-                 publishYear: 2020, publisher: "出版社", availableCopies: 3, totalCopies: 3, imageUrl: nil)
-        ])
+// MARK: - Provider
+struct BookCarouselProvider: TimelineProvider {
+    func placeholder(in context: Context) -> BookCarouselEntry {
+        // 預覽時顯示的假資料（不會在正式環境中用到）
+        BookCarouselEntry(
+            date: Date(),
+            books: [
+                Book(id: 1, title: "Loading...", author: "", category: "", publishYear: 2024, publisher: "", availableCopies: 0, totalCopies: 0, imageUrl: nil)
+            ]
+        )
     }
 
-    func getSnapshot(in context: Context, completion: @escaping (BookCoverEntry) -> Void) {
+    func getSnapshot(in context: Context, completion: @escaping (BookCarouselEntry) -> ()) {
         Task {
-            let books = try? await APIService.shared.fetchBooks()
-            completion(BookCoverEntry(date: Date(), books: books ?? []))
+            do {
+                let books = try await APIService.shared.fetchBooks()
+                let entry = BookCarouselEntry(date: Date(), books: books)
+                completion(entry)
+            } catch {
+                print("❌ Snapshot API fetch failed: \(error)")
+                completion(placeholder(in: context))
+            }
         }
     }
 
-    func getTimeline(in context: Context, completion: @escaping (Timeline<BookCoverEntry>) -> Void) {
+    func getTimeline(in context: Context, completion: @escaping (Timeline<BookCarouselEntry>) -> ()) {
         Task {
-            let books = try? await APIService.shared.fetchBooks()
-            let entry = BookCoverEntry(date: Date(), books: books ?? [])
-            let nextUpdate = Calendar.current.date(byAdding: .minute, value: 30, to: Date())!
-            let timeline = Timeline(entries: [entry], policy: .after(nextUpdate))
-            completion(timeline)
+            do {
+                let books = try await APIService.shared.fetchBooks()
+                let entry = BookCarouselEntry(date: Date(), books: books)
+                
+                // 設定下一次更新時間（例如 30 分鐘後）
+                let nextUpdate = Calendar.current.date(byAdding: .minute, value: 30, to: Date())!
+                let timeline = Timeline(entries: [entry], policy: .after(nextUpdate))
+                completion(timeline)
+            } catch {
+                print("❌ Timeline API fetch failed: \(error)")
+                completion(Timeline(entries: [placeholder(in: context)], policy: .after(Date().addingTimeInterval(60 * 10))))
+            }
         }
     }
 }
 
-// 🔹 Widget 主視圖
-struct BookCoverWidgetView: View {
-    let entry: BookCoverEntry
-    @State private var selectedCategory: String = "所有書籍"
-    @State private var currentIndex: Int = 0
-    let timer = Timer.publish(every: 3, on: .main, in: .common).autoconnect()
-
-    let categories: [String] = ["所有書籍", "文學小說", "漫畫", "程式設計", "心理勵志"]
-
-    var filteredBooks: [Book] {
-        selectedCategory == "所有書籍" ? entry.books : entry.books.filter { $0.category == selectedCategory }
-    }
+// MARK: - Widget View
+struct BookCarouselWidgetEntryView: View {
+    var entry: BookCarouselProvider.Entry
+    
+    @State private var currentIndex = 0
+    @Environment(\.widgetFamily) var family
 
     var body: some View {
-        VStack(spacing: 6) {
-
-            // 分類 Picker
-            Picker("分類", selection: $selectedCategory) {
-                ForEach(categories, id: \.self) { category in
-                    Text(category)
-                }
-            }
-            .pickerStyle(SegmentedPickerStyle())
-            .padding([.horizontal, .top])
-
-            GeometryReader { geo in
-                if filteredBooks.isEmpty {
-                    Text("暫無書籍資料")
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                } else {
-                    // 封面輪播
-                    TabView(selection: $currentIndex) {
-                        ForEach(Array(filteredBooks.enumerated()), id: \.offset) { index, book in
-                            VStack {
-                                AsyncImage(url: URL(string: book.imageUrl ?? "")) { image in
-                                    image.resizable()
-                                         .scaledToFill()
-                                } placeholder: {
-                                    Color.gray.opacity(0.3)
+        GeometryReader { geometry in
+            if entry.books.isEmpty {
+                Text("沒有書籍資料")
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(Color.gray.opacity(0.1))
+            } else {
+                TabView(selection: $currentIndex) {
+                    ForEach(Array(entry.books.prefix(5).enumerated()), id: \.element.id) { index, book in
+                        VStack {
+                            // 書籍圖片
+                            if let imageUrl = book.imageUrl, let url = URL(string: imageUrl) {
+                                AsyncImage(url: url) { phase in
+                                    switch phase {
+                                    case .empty:
+                                        ProgressView()
+                                            .frame(height: geometry.size.height * 0.6)
+                                    case .success(let image):
+                                        image
+                                            .resizable()
+                                            .scaledToFit()
+                                            .frame(height: geometry.size.height * 0.6)
+                                            .cornerRadius(8)
+                                    case .failure:
+                                        Image(systemName: "book.closed")
+                                            .resizable()
+                                            .scaledToFit()
+                                            .frame(height: geometry.size.height * 0.6)
+                                            .foregroundColor(.gray)
+                                    @unknown default:
+                                        EmptyView()
+                                    }
                                 }
-                                .frame(width: geo.size.width, height: geo.size.height * 0.7)
-                                .clipped()
-                                .cornerRadius(8)
-
-                                Text(book.title)
-                                    .font(.caption)
-                                    .lineLimit(1)
+                            } else {
+                                Image(systemName: "book.closed")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(height: geometry.size.height * 0.6)
+                                    .foregroundColor(.gray)
                             }
-                            .tag(index)
+
+                            // 書名 + 作者
+                            Text(book.title)
+                                .font(.headline)
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal, 😎
+                                .lineLimit(2)
+
+                            Text(book.author)
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                                .lineLimit(1)
                         }
-                    }
-                    .tabViewStyle(PageTabViewStyle(indexDisplayMode: .always))
-                    .onReceive(timer) { _ in
-                        withAnimation {
-                            currentIndex = (currentIndex + 1) % filteredBooks.count
-                        }
+                        .tag(index)
                     }
                 }
+                .tabViewStyle(PageTabViewStyle())
             }
-
-            // 簡單統計
-            if !filteredBooks.isEmpty {
-                let total = filteredBooks.count
-                let available = filteredBooks.filter { $0.availableCopies > 0 }.count
-                Text("📘 \(selectedCategory) 共 \(total) 本，剩餘 \(available) 本可借")
-                    .font(.subheadline)
-                    .foregroundColor(.gray)
-                    .padding(.top, 4)
-            }
-
-            Spacer()
         }
     }
 }
 
-// 🔹 Widget 定義
-struct BookCoverCarouselWidget: Widget {
-    let kind: String = "BookCoverCarouselWidget"
+// MARK: - Widget 定義
+@main
+struct BookCarouselWidget: Widget {
+    let kind: String = "BookCarouselWidget"
 
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: kind, provider: BookCoverProvider()) { entry in
-            BookCoverWidgetView(entry: entry)
+        StaticConfiguration(kind: kind, provider: BookCarouselProvider()) { entry in
+            BookCarouselWidgetEntryView(entry: entry)
         }
-        .configurationDisplayName("書籍封面輪播")
-        .description("顯示圖書館書籍封面，輪播展示最新書籍。")
+        .configurationDisplayName("📚 書籍輪播")
+        .description("自動從後端載入最新的書籍資料，顯示可輪播的封面。")
         .supportedFamilies([.systemMedium, .systemLarge])
-    }
-}
-
-// 🔹 Preview
-struct BookCoverCarouselWidget_Previews: PreviewProvider {
-    static var previews: some View {
-        BookCoverWidgetView(entry: BookCoverEntry(date: Date(), books: [
-            Book(id: 1, title: "GOTH斷掌事件", author: "乙一", category: "文學小說", publishYear: 2002, publisher: "皇冠文化", availableCopies: 3, totalCopies: 3, imageUrl: nil),
-            Book(id: 2, title: "Java SE 17 技術手冊", author: "林信良", category: "程式設計", publishYear: 2019, publisher: "碁峯資訊", availableCopies: 2, totalCopies: 3, imageUrl: nil)
-        ]))
-        .previewContext(WidgetPreviewContext(family: .systemMedium))
     }
 }
 
