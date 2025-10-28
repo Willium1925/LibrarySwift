@@ -1,16 +1,16 @@
 //
-//  D1397102Control.swift
-//  D1397102
+//  newTargetControl.swift
+//  newTarget
 //
-//  Created by fcuiecs on 2025/10/27.
+//  Created by Demo0820 on 2025/10/28.
 //
 
 import AppIntents
 import SwiftUI
 import WidgetKit
 
-struct D1397102Control: ControlWidget {
-    static let kind: String = "jin888.LibrarySwift.D1397102"
+struct newTargetControl: ControlWidget {
+    static let kind: String = "jin888.LibrarySwift.newTarget"
 
     var body: some ControlWidgetConfiguration {
         AppIntentControlConfiguration(
@@ -30,7 +30,7 @@ struct D1397102Control: ControlWidget {
     }
 }
 
-extension D1397102Control {
+extension newTargetControl {
     struct Value {
         var isRunning: Bool
         var name: String
@@ -38,12 +38,12 @@ extension D1397102Control {
 
     struct Provider: AppIntentControlValueProvider {
         func previewValue(configuration: TimerConfiguration) -> Value {
-            D1397102Control.Value(isRunning: false, name: configuration.timerName)
+            newTargetControl.Value(isRunning: false, name: configuration.timerName)
         }
 
         func currentValue(configuration: TimerConfiguration) async throws -> Value {
             let isRunning = true // Check if the timer is running
-            return D1397102Control.Value(isRunning: isRunning, name: configuration.timerName)
+            return newTargetControl.Value(isRunning: isRunning, name: configuration.timerName)
         }
     }
 }

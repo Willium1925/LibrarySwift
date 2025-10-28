@@ -1,8 +1,8 @@
 //
-//  D1397102.swift
-//  D1397102
+//  newTarget.swift
+//  newTarget
 //
-//  Created by fcuiecs on 2025/10/27.
+//  Created by Demo0820 on 2025/10/28.
 //
 
 import WidgetKit
@@ -41,7 +41,7 @@ struct SimpleEntry: TimelineEntry {
     let configuration: ConfigurationAppIntent
 }
 
-struct D1397102EntryView : View {
+struct newTargetEntryView : View {
     var entry: Provider.Entry
 
     var body: some View {
@@ -55,12 +55,12 @@ struct D1397102EntryView : View {
     }
 }
 
-struct D1397102: Widget {
-    let kind: String = "D1397102"
+struct newTarget: Widget {
+    let kind: String = "newTarget"
 
     var body: some WidgetConfiguration {
         AppIntentConfiguration(kind: kind, intent: ConfigurationAppIntent.self, provider: Provider()) { entry in
-            D1397102EntryView(entry: entry)
+            newTargetEntryView(entry: entry)
                 .containerBackground(.fill.tertiary, for: .widget)
         }
     }
@@ -81,7 +81,7 @@ extension ConfigurationAppIntent {
 }
 
 #Preview(as: .systemSmall) {
-    D1397102()
+    newTarget()
 } timeline: {
     SimpleEntry(date: .now, configuration: .smiley)
     SimpleEntry(date: .now, configuration: .starEyes)

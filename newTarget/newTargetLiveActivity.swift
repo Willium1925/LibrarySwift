@@ -1,15 +1,15 @@
 //
-//  JinLibraryLiveActivity.swift
-//  JinLibrary
+//  newTargetLiveActivity.swift
+//  newTarget
 //
-//  Created by fcuiecs on 2025/10/14.
+//  Created by Demo0820 on 2025/10/28.
 //
 
 import ActivityKit
 import WidgetKit
 import SwiftUI
 
-struct JinLibraryAttributes: ActivityAttributes {
+struct newTargetAttributes: ActivityAttributes {
     public struct ContentState: Codable, Hashable {
         // Dynamic stateful properties about your activity go here!
         var emoji: String
@@ -19,9 +19,9 @@ struct JinLibraryAttributes: ActivityAttributes {
     var name: String
 }
 
-struct JinLibraryLiveActivity: Widget {
+struct newTargetLiveActivity: Widget {
     var body: some WidgetConfiguration {
-        ActivityConfiguration(for: JinLibraryAttributes.self) { context in
+        ActivityConfiguration(for: newTargetAttributes.self) { context in
             // Lock screen/banner UI goes here
             VStack {
                 Text("Hello \(context.state.emoji)")
@@ -56,25 +56,25 @@ struct JinLibraryLiveActivity: Widget {
     }
 }
 
-extension JinLibraryAttributes {
-    fileprivate static var preview: JinLibraryAttributes {
-        JinLibraryAttributes(name: "World")
+extension newTargetAttributes {
+    fileprivate static var preview: newTargetAttributes {
+        newTargetAttributes(name: "World")
     }
 }
 
-extension JinLibraryAttributes.ContentState {
-    fileprivate static var smiley: JinLibraryAttributes.ContentState {
-        JinLibraryAttributes.ContentState(emoji: "😀")
+extension newTargetAttributes.ContentState {
+    fileprivate static var smiley: newTargetAttributes.ContentState {
+        newTargetAttributes.ContentState(emoji: "😀")
      }
      
-     fileprivate static var starEyes: JinLibraryAttributes.ContentState {
-         JinLibraryAttributes.ContentState(emoji: "🤩")
+     fileprivate static var starEyes: newTargetAttributes.ContentState {
+         newTargetAttributes.ContentState(emoji: "🤩")
      }
 }
 
-#Preview("Notification", as: .content, using: JinLibraryAttributes.preview) {
-   JinLibraryLiveActivity()
+#Preview("Notification", as: .content, using: newTargetAttributes.preview) {
+   newTargetLiveActivity()
 } contentStates: {
-    JinLibraryAttributes.ContentState.smiley
-    JinLibraryAttributes.ContentState.starEyes
+    newTargetAttributes.ContentState.smiley
+    newTargetAttributes.ContentState.starEyes
 }
