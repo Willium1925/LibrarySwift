@@ -108,7 +108,7 @@ struct BookCarouselWidgetEntryView: View {
                             Text(book.title)
                                 .font(.headline)
                                 .multilineTextAlignment(.center)
-                                .padding(.horizontal, 😎
+                                .padding(.horizontal, 8)
                                 .lineLimit(2)
 
                             Text(book.author)
@@ -126,7 +126,7 @@ struct BookCarouselWidgetEntryView: View {
 }
 
 // MARK: - Widget 定義
-@main
+//@main
 struct BookCarouselWidget: Widget {
     let kind: String = "BookCarouselWidget"
 

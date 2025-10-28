@@ -14,5 +14,6 @@ struct JinLibraryBundle: WidgetBundle {
         JinLibrary()
         JinLibraryControl()
         JinLibraryLiveActivity()
+        BookCarouselWidget()
     }
 }

@@ -4,7 +4,7 @@
 <dict>
 	<key>com.apple.security.application-groups</key>
 	<array>
-		<string>group..com.yourteam.LibrarySwift</string>
+		<string>group.matsuzakaSelf</string>
 	</array>
 </dict>
 </plist>
