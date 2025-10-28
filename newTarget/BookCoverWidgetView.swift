@@ -140,20 +140,27 @@ struct BookCarouselWidgetEntryView: View {
                 
                 // 2. 直接顯示第一本書的 VStack (拿掉 TabView 和 ForEach)
                 VStack {
+                    // --- ✅ 加上這行來除錯 ---
+                        let _ = print("Book Title: \(book.title), Image URL: \(book.imageUrl ?? "URL is NIL")")
+                        // -------------------------
+                    
                     // 書籍圖片
                     if let imageUrl = book.imageUrl, let url = URL(string: imageUrl) {
                         AsyncImage(url: url) { phase in
                             switch phase {
                             case .empty:
+                                let _ = print("AsyncImage [\(book.title)]: .empty (正在載入...)")
                                 ProgressView()
                                     .frame(height: geometry.size.height * 0.6)
                             case .success(let image):
+                                let _ = print("AsyncImage [\(book.title)]: .success (載入成功)")
                                 image
                                     .resizable()
                                     .scaledToFit()
                                     .frame(height: geometry.size.height * 0.6)
                                     .cornerRadius(8)
                             case .failure:
+                                let _ = print("AsyncImage [\(book.title)]: .failure, 錯誤:")
                                 Image(systemName: "book.closed")
                                     // ... (以下省略，你的程式碼都正確) ...
                                     .resizable()

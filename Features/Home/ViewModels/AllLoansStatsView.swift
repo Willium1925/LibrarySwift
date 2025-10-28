@@ -1,16 +1,9 @@
-//
-//  AllLoansStatsView.swift
-//  LibrarySwift
-//
-//  Created by 謝依晴 on 2025/10/21.
-//
-
 import SwiftUI
 import Charts
 
 struct AllLoansStatsView: View {
     @Environment(AuthenticationManager.self) private var authManager
-    @StateObject private var vm = StatsAllViewModel()
+    @State private var vm = StatsAllViewModel()
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
