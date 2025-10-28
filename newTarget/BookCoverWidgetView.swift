@@ -56,6 +56,7 @@ struct BookCarouselProvider: TimelineProvider {
     }
 }
 
+/*
 // MARK: - Widget View
 struct BookCarouselWidgetEntryView: View {
     var entry: BookCarouselProvider.Entry
@@ -122,6 +123,80 @@ struct BookCarouselWidgetEntryView: View {
                 .tabViewStyle(PageTabViewStyle())
             }
         }
+    }
+}
+*/
+
+struct BookCarouselWidgetEntryView: View {
+    var entry: BookCarouselProvider.Entry
+    
+    @Environment(\.widgetFamily) var family
+
+    var body: some View {
+        GeometryReader { geometry in
+            // --- 修改開始 ---
+            // 1. 檢查 books 是否為空，並取出第一本
+            if let book = entry.books.first {
+                
+                // 2. 直接顯示第一本書的 VStack (拿掉 TabView 和 ForEach)
+                VStack {
+                    // 書籍圖片
+                    if let imageUrl = book.imageUrl, let url = URL(string: imageUrl) {
+                        AsyncImage(url: url) { phase in
+                            switch phase {
+                            case .empty:
+                                ProgressView()
+                                    .frame(height: geometry.size.height * 0.6)
+                            case .success(let image):
+                                image
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(height: geometry.size.height * 0.6)
+                                    .cornerRadius(8)
+                            case .failure:
+                                Image(systemName: "book.closed")
+                                    // ... (以下省略，你的程式碼都正確) ...
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(height: geometry.size.height * 0.6)
+                                    .foregroundColor(.gray)
+                            @unknown default:
+                                EmptyView()
+                            }
+                        }
+                    } else {
+                        Image(systemName: "book.closed")
+                            // ... (以下省略) ...
+                            .resizable()
+                            .scaledToFit()
+                            .frame(height: geometry.size.height * 0.6)
+                            .foregroundColor(.gray)
+                    }
+
+                    // 書名 + 作者
+                    Text(book.title)
+                        .font(.headline)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 8)
+                        .lineLimit(2)
+
+                    Text(book.author)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .lineLimit(1)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity) // 確保 VStack 填滿
+                
+            } else {
+                // 3. 如果 entry.books 是空的
+                Text("沒有書籍資料")
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(Color.gray.opacity(0.1))
+            }
+            // --- 修改結束 ---
+        }
+        // ✅ 確保 .containerBackground 仍然在 (你上次加的)
+        .containerBackground(.fill.tertiary, for: .widget)
     }
 }
 
